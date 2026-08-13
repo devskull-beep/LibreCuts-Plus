@@ -17,6 +17,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+      
+      - name: Generate Launcher Icons
+        run: |
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          convert -size 192x192 xc:"#FF6B6B" /tmp/icon_base.png
+          convert /tmp/icon_base.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert /tmp/icon_base.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert /tmp/icon_base.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert /tmp/icon_base.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+      
       - name: Download Android SDK
         run: |
           mkdir -p /home/runner/android-sdk
@@ -28,11 +43,9 @@ jobs:
           mkdir -p cmdline-tools
           mv cmdline-tools-temp cmdline-tools/latest 2>/dev/null || true
           yes | cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/runner/android-sdk "platforms;android-34" "build-tools;34.0.0" "platform-tools" > /dev/null 2>&1 || true
-          echo "Android SDK instalado"
       
       - name: Build APK
-        run: |
-          gradle assembleRelease --no-daemon
+        run: gradle assembleRelease --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
