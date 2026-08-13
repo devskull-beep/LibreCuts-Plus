@@ -17,19 +17,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 34
-          build-tools: '34.0.0'
-      
-      - name: Create local.properties
+      - name: Download Android SDK
         run: |
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          mkdir -p $HOME/android-sdk
+          cd $HOME/android-sdk
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mkdir -p cmdline-tools
+          mv cmdline-tools cmdline-tools-temp
+          mkdir -p cmdline-tools
+          mv cmdline-tools-temp cmdline-tools/latest
+          echo "y" | cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+      
+      - name: Set SDK path
+        run: |
+          echo "sdk.dir=$HOME/android-sdk" > local.properties
           echo "android.useAndroidX=true" >> local.properties
       
       - name: Build APK
-        run: gradle assembleRelease
+        run: |
+          gradle assembleRelease --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
