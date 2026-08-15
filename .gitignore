@@ -11,3 +11,7 @@ local.properties
 /app/build
 *.apk
 *.aab
+
+# Keystore should never be committed
+keystore.properties
+*.jks
