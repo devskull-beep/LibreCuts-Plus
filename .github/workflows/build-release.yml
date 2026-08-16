@@ -25,19 +25,22 @@ jobs:
           java-version: '17'
 
       - name: Prepare keystore (if provided)
-        if: ${{ secrets.KSTORE_BASE64 }}
-        run: |
-          echo "Decoding keystore from KSTORE_BASE64..."
-          echo "$KSTORE_BASE64" | base64 --decode > librecuts.keystore
-          echo "storeFile=librecuts.keystore" > keystore.properties
-          echo "storePassword=${STORE_PASSWORD}" >> keystore.properties
-          echo "keyAlias=${KEY_ALIAS}" >> keystore.properties
-          echo "keyPassword=${KEY_PASSWORD}" >> keystore.properties
         env:
           KSTORE_BASE64: ${{ secrets.KSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KSTORE_BASE64" ]; then
+            echo "Decoding keystore from KSTORE_BASE64..."
+            echo "$KSTORE_BASE64" | base64 --decode > librecuts.keystore
+            echo "storeFile=librecuts.keystore" > keystore.properties
+            echo "storePassword=${STORE_PASSWORD}" >> keystore.properties
+            echo "keyAlias=${KEY_ALIAS}" >> keystore.properties
+            echo "keyPassword=${KEY_PASSWORD}" >> keystore.properties
+          else
+            echo "KSTORE_BASE64 not provided; skipping keystore preparation."
+          fi
 
       - name: Grant executable for gradlew
         run: chmod +x gradlew
